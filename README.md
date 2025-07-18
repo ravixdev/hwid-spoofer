@@ -217,6 +217,17 @@ sc stop HWIDSpoofer
 
 ---
 
+## ✅ Verification & Integrity
+
+You can verify the binary release with VirusTotal:  
+
+- **SHA256:** `8b529b3d69ce2e9eb043af27a924b99d4cc8166efca827f38a81e2b86bd2aa11`  
+- **VirusTotal Scan:** [View Report](https://www.virustotal.com/gui/file/8b529b3d69ce2e9eb043af27a924b99d4cc8166efca827f38a81e2b86bd2aa11?nocache=1)
+
+This ensures the release matches the original build.
+
+---
+
 ## ⚠️ Limitations
 
 - Simplified MAC spoofing → may not work on all adapters  
