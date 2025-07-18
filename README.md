@@ -1,125 +1,158 @@
-# HWID Spoofer for Windows 11  
+# HWID Spoofer for Windows 11
 
 ![Windows](https://img.shields.io/badge/Windows-11-blue?logo=windows)  
 ![Build](https://img.shields.io/badge/Build-22631-lightgrey)  
-![License](https://img.shields.io/badge/License-MIT-green)  
+![License](https://img.shields.io/badge/License-MIT-green)
 
-> **Temporary, memory-based HWID spoofing for research & educational use.**  
+> **Temporary, memory-based HWID spoofing for research & educational use.**
 
 ⚠️ **WARNING**  
 This tool violates Microsoft’s terms and most game anti-cheat policies. It can cause instability (BSODs) and may trigger bans.  
-**Use only in virtual machines or controlled environments.**  
+**Use only in virtual machines or controlled environments.**
 
 ---
 
-## 📌 Overview  
+## 📌 Overview
 
-HWID Spoofer is a **proof-of-concept** for spoofing hardware identifiers (**disk serials & MAC addresses**) on Windows 11.  
+HWID Spoofer is a **proof-of-concept** for spoofing hardware identifiers (**disk serials & MAC addresses**) on Windows 11.
 
-✅ **Disk Serial Spoofing** – Samsung/WD-like serials (e.g., `SAMSUNG_X7Y9Z1A2B3`)  
-✅ **MAC Address Spoofing** – Randomized MACs (e.g., `1A:2B:3C:4D:5E:6F`)  
-✅ **Memory-Based** – No permanent changes, revert on driver unload or restart  
-✅ **Clean Console UI** – Cyan headers, green success, red errors  
-✅ **Backup & Restore** – Saves original serials to `serial_backup.txt`  
-✅ **Light Anti-Detection** – Inline hooks, no SSDT  
+- ✅ **Disk Serial Spoofing** – Samsung/WD-like serials (e.g., `SAMSUNG_X7Y9Z1A2B3`)  
+- ✅ **MAC Address Spoofing** – Randomized MACs (e.g., `1A:2B:3C:4D:5E:6F`)  
+- ✅ **Memory-Based** – No permanent changes, revert on driver unload or restart  
+- ✅ **Clean Console UI** – Cyan headers, green success, red errors  
+- ✅ **Backup & Restore** – Saves original serials to `serial_backup.txt`  
+- ✅ **Light Anti-Detection** – Inline hooks, no SSDT
 
 ---
 
-## ✅ Requirements  
+## ✅ Requirements
 
 - **Windows 11** (10.0.22631 Build 22631)  
-- **Admin rights** to run & load drivers  
+- **Administrator rights** to run & load drivers  
 - **Visual Studio 2022** + Desktop C++ workload  
 - **Windows SDK 10.0.22621+** + **WDK**  
-- Test signing enabled →  
-  ```cmd
-  bcdedit /set testsigning on
-🛠 Building
-1️⃣ Clone the repository
-cmd
-Copy
-Edit
+- Test signing enabled:
+
+```cmd
+bcdedit /set testsigning on
+```
+
+- *(Optional)* Virtual machine for safer testing  
+- **DbgView** for kernel logs
+
+---
+
+## 🛠 Building
+
+### 1️⃣ Clone the Repository
+
+```cmd
 git clone https://github.com/ravixdev/hwid-spoofer.git
 cd hwid-spoofer
-2️⃣ Build the User-Mode Application
-Open hwid_spoofer.cpp in Visual Studio 2022
+```
 
-Set build configuration to x64 Release
+---
 
-Link required libraries:
+### 2️⃣ Build the User-Mode Application
 
-vbnet
-Copy
-Edit
+1. Open `hwid_spoofer.cpp` in **Visual Studio 2022**  
+2. Set build configuration → **x64 Release**  
+3. Link required libraries:
+
+```
 advapi32.lib; iphlpapi.lib
-Build → hwid_spoofer.exe will be in x64\Release
+```
 
-✅ Copy hwid_spoofer.exe to a writable folder (e.g., C:\HWIDSpoofer)
+4. Build → Output will be in:
 
-3️⃣ Build the Kernel-Mode Driver
-Install WDK for Visual Studio 2022
+```
+x64\Release\hwid_spoofer.exe
+```
 
-Create a new project → Empty WDM Driver
+✅ **Copy** `hwid_spoofer.exe` to a writable folder, e.g.:
 
-Add hwid_driver.c under Source Files
+```
+C:\HWIDSpoofer
+```
 
-Set build configuration to x64 Release
+---
 
-Configure:
+### 3️⃣ Build the Kernel-Mode Driver
 
-Target OS Version → Windows 10+ (or Windows 11)
+1. Install **WDK for Visual Studio 2022**  
+2. Create a new project → **Empty WDM Driver**  
+3. Add `hwid_driver.c` under **Source Files**  
+4. Set build configuration → **x64 Release**  
+5. Configure:
+   - **Target OS Version** → Windows 10+ (or Windows 11)  
+   - **Driver Signing** → Test Sign Mode  
+   - **C++ Standard** → C++17 or later
 
-Driver Signing → Test Sign Mode
+✅ **Output:**
 
-C++ Standard → C++17 or later
+```
+x64\Release\HWIDSpoofer.sys
+```
 
-✅ Output: HWIDSpoofer.sys in x64\Release
+✅ **Copy** `HWIDSpoofer.sys` to:
 
-✅ Copy HWIDSpoofer.sys to:
-
-makefile
-Copy
-Edit
+```
 C:\Windows\System32\drivers
-4️⃣ Final File Layout
-makefile
-Copy
-Edit
+```
+
+---
+
+### 4️⃣ Final File Layout
+
+```
 C:\HWIDSpoofer\
   ├── hwid_spoofer.exe
   └── spoofer_log.txt (created at runtime)
 
 C:\Windows\System32\drivers\
   └── HWIDSpoofer.sys
-▶️ Usage
-1️⃣ Enable Test Signing Mode
-cmd
-Copy
-Edit
-bcdedit /set testsigning on
-(Disable Secure Boot in BIOS if required, re-enable after testing)
+```
 
-2️⃣ Load the Driver
-c
-Copy
-Edit
+---
+
+## ▶️ Usage
+
+### 1️⃣ Enable Test Signing Mode
+
+```cmd
+bcdedit /set testsigning on
+```
+
+*(If Secure Boot is enabled, temporarily disable it in BIOS. Re-enable after testing.)*
+
+---
+
+### 2️⃣ Load the Driver
+
+```cmd
 sc create HWIDSpoofer binPath= "C:\Windows\System32\drivers\HWIDSpoofer.sys" type= kernel
 sc start HWIDSpoofer
+```
+
 ✅ Verify driver status:
 
-cmd
-Copy
-Edit
+```cmd
 sc query HWIDSpoofer
-3️⃣ Run the Spoofer
-cmd
-Copy
-Edit
-hwid_spoofer.exe  (Run as Administrator)
-📖 Menu
-markdown
-Copy
-Edit
+```
+
+---
+
+### 3️⃣ Run the Spoofer
+
+```cmd
+hwid_spoofer.exe   (Run as Administrator)
+```
+
+---
+
+### 📖 Menu
+
+```
 ===================================================
 HWID Spoofer Loader for Windows 11 (Build 22631)
 ===================================================
@@ -128,74 +161,93 @@ HWID Spoofer Loader for Windows 11 (Build 22631)
 3. Apply Spoofed HWIDs
 4. Clear Spoofed HWIDs
 Enter choice (1-4):
-✅ Verification
+```
 
-Disk: wmic diskdrive get serialnumber
+✅ **Verification**
 
-MAC: ipconfig /all
+- Disk:
 
-Revert: sc stop HWIDSpoofer or restart
+```cmd
+wmic diskdrive get serialnumber
+```
 
-🔧 Troubleshooting
-App closes instantly?
+- MAC:
 
-Check spoofer_log.txt
+```cmd
+ipconfig /all
+```
 
-Run as Administrator
+- Revert changes:
 
-Driver fails?
+```cmd
+sc stop HWIDSpoofer
+```
 
-Ensure test signing is ON
+*(or restart your system)*
 
-Verify driver path & rebuild with correct WDK
+---
 
-Use DbgView for kernel logs
+## 🔧 Troubleshooting
 
-MAC spoofing not working?
+**App closes instantly?**
+- Check `spoofer_log.txt`
+- Run as **Administrator**
 
-Some adapters need specific logic
+**Driver fails to load?**
+- Ensure **test signing is ON**
+- Verify driver path & rebuild with correct WDK settings
+- Use **DbgView** for kernel logs
 
-🔍 Technical Details
-User-mode (hwid_spoofer.cpp)
+**MAC spoofing not working?**
+- Some adapters require additional logic for spoofing
 
-Written in C++17 + WinAPI
+---
 
-Communicates with \\.\HWIDSpoofer via DeviceIoControl
+## 🔍 Technical Details
 
-Generates realistic Samsung/WD serials & MACs
+- **User-mode (`hwid_spoofer.cpp`)**
+  - Written in C++17 + WinAPI
+  - Communicates with `\\.\HWIDSpoofer` via `DeviceIoControl`
+  - Generates realistic Samsung/WD serials & MACs
 
-Kernel-mode (hwid_driver.c)
+- **Kernel-mode (`hwid_driver.c`)**
+  - Hooks `IOCTL_STORAGE_QUERY_PROPERTY` (disk serials)
+  - Hooks NDIS `OID_802_3_PERMANENT_ADDRESS` for MAC spoofing (simplified)
+  - **Memory-only changes** revert on driver unload or restart
 
-Hooks IOCTL_STORAGE_QUERY_PROPERTY (disk serials)
+---
 
-Hooks NDIS OID_802_3_PERMANENT_ADDRESS for MAC spoofing (simplified)
+## ⚠️ Limitations
 
-Memory-only changes revert on unload
+- Simplified MAC spoofing → may not work on all adapters  
+- Advanced anti-cheats (e.g., Vanguard, BattlEye) **can detect** the driver  
+- Kernel hooks may cause **BSODs** → test in a **VM**  
+- Test signing required → production use would need an **EV certificate**
 
-⚠️ Limitations
-Simplified MAC spoofing → may not work for all adapters
+---
 
-Advanced anti-cheats (Vanguard, BattlEye) can detect the driver
+## 📜 Legal & Safety
 
-Kernel hooks may cause BSODs → test in a VM
+- **Educational use only.**
+- HWID spoofing violates Microsoft & game anti-cheat policies.
+- Use at your own risk. The author is **not responsible** for bans, damage, or legal consequences.
 
-Test signing required → production use needs EV cert
+---
 
-📜 Legal & Safety
-Educational use only.
+## 🤝 Contributing
 
-Spoofing HWIDs violates Microsoft & game policies.
+Pull requests & issues welcome!
 
-Use at your own risk. The author is not responsible for bans, damage, or legal issues.
+- Please test changes in a VM
+- Keep the **memory-based (non-persistent)** approach to avoid Windows activation issues
 
-🤝 Contributing
-PRs & issues welcome!
+---
 
-Test changes in a VM
+## 📄 License
 
-Keep memory-based (non-persistent) approach
+This project is licensed under the **MIT License**.  
+See [LICENSE](LICENSE) for details.
 
-📄 License
-This project is licensed under the MIT License. See LICENSE for details.
+---
 
-Made by ravix.dev
+**Made by [ravix.dev](https://ravix.dev)**
